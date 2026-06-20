@@ -1,0 +1,42 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Session {
+  id           String        @id @default(uuid())
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  interactions Interaction[]
+  challenges   Challenge[]
+}
+
+model Interaction {
+  id        String   @id @default(uuid())
+  sessionId String
+  session   Session  @relation(fields: [sessionId], references: [id])
+  type      String   // "page_view", "click", "product_view"
+  url       String?
+  elementId String?
+  metadata  String?  // JSON stringified additional data (e.g. time spent, product ID)
+  timestamp DateTime @default(now())
+}
+
+model Challenge {
+  id          String   @id @default(uuid())
+  sessionId   String
+  session     Session  @relation(fields: [sessionId], references: [id])
+  type        String   // "multiple_choice", "visual_recall", "sequence", "context_matching"
+  difficulty  String   // "Low", "Medium", "High"
+  question    String
+  options     String   // JSON stringified array of options
+  answer      String   // Correct answer
+  isSolved    Boolean  @default(false)
+  timeTakenMs Int?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
